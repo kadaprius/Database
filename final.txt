@@ -1,0 +1,207 @@
+/*
+1. In database Base_24 create tables: Table_24 (parent table) and Table_242 (dependent table). 
+Establish relationship between these tables. Define mode, when changing primary key value in parent table, 
+the foreign key values in corresponding rows in dependent table will be changed too. Define mode, 
+when deleting rows from parent table, the corresponding rows from dependent table will be deleted too. 
+The table Table_24 contains columns: table24_ID, col_24 and col_25 have integer type. 
+The table Table_242 contains columns: table242_ID and table24_ID have integer type, 
+and col_26 and col_27 have Unicode character data type, that has fixed size and contains 24 characters. (5 points)
+*/
+
+use Base_24
+
+-- Creating the parent table Table_24
+CREATE TABLE Table_24 (
+    table24_ID INT PRIMARY KEY,
+    col_24 INT,
+    col_25 INT
+);
+
+-- Creating the dependent table Table_242
+USE Base_24;
+
+CREATE TABLE Table_242
+(
+    table243_ID INT PRIMARY KEY IDENTITY (1,1),
+    table24_ID INT REFERENCES Table_24(table24_ID) ON UPDATE CASCADE ON DELETE CASCADE,
+    col_26 NCHAR(24),
+    col_27 NCHAR(24)
+);
+
+
+
+
+-- 2. a. In database Base_24 add new column col_28 to the table Table_24, which has constraint UNIQUE named as col_24_unique.
+USE Base_24;
+
+ALTER TABLE Table_24
+ADD col_28 INT,
+CONSTRAINT col_24_unique UNIQUE (col_28);
+
+--b. Delete constraint col_24_default from the table Table_24.
+USE Base_24;
+
+ALTER TABLE Table_24
+DROP CONSTRAINT col_24_default;
+
+--3. In database Base_24 create view View_24, in which appears the values of columns col_24 and col_25 of table Table_24. 
+--In view should be appear the rows for which values of column col_24 are greater than or 
+--equal to 240 or values of column col_25 are less than or equal to 244. 
+
+USE Base_24;
+GO
+CREATE VIEW View_24
+AS
+SELECT col_24, col_25 
+FROM Table_24 
+WHERE col_24 >= 240 and col_25 <= 244;
+
+--b. Rename the view View_24, new name is View_241.
+USE Base_24;
+
+EXEC sp_rename 'View_24', 'View_241';
+--c. Open the view View_241.
+
+USE Base_24;
+
+SELECT * FROM View_241;
+
+--4.a. Create not unique, nonclastered index Ind_col_24 for column col_24 of the table Table_24.
+USE Base_24;
+
+CREATE NONCLUSTERED INDEX Ind_col_24
+ON Table_24 (col_24);
+--b. Delete index Ind_col_24 of the table Table_24. (5 points, 3-2)
+USE Base_24;
+
+DROP INDEX Ind_col_24
+ON Table_24;
+--5 a. Create the Operator_24 operator, which will be sent a notification on pager from Monday
+--to Sunday from 01:07 to 00:36. Operator_24 is not active.
+
+use msdb;
+exec sp_add_operator @name = 'Operator_24',
+@enabled = 0,
+@pager_address = 'oper24@pageraddress.com',
+@weekday_pager_start_time = 010700,
+@weekday_pager_end_time = 003600,
+@pager_days = 127;
+	
+--b. Change status of the Operatori_24
+--operator so, that he (she) can receive notifications on E-mail and pager on Tuesday, Thursday
+--and Friday from 14:35 to 23:12. Enable this operator.
+USE msdb;
+EXEC sp_update_operator @name = 'Operator_24', @enabled = 1,
+@weekday_pager_start_time = 143500,
+@weekday_pager_end_time = 231200,
+@pager_days = 52;
+--6 a. Create the Alert_24 alert. The alert is active. An error text will be included in a message
+--that should be sent on pager. The error number is 9024. The delay between responses is 240
+--seconds. Define the notification message. The error must occur in the Base_24 database for the
+--alert to fire. The Job_24 job be executed in response to this alert. 
+USE msdb;
+EXEC sp_add_job @job_name = N'Job_24';
+ EXEC sp_add_jobserver
+    @job_name = 'Job_24',
+    @server_name = '(LOCAL)';
+
+EXEC sp_add_alert @name = 'Alert_24',
+@enabled = 1,
+@message_id = 9024,
+@notification_message = N'There is an error',
+@delay_between_responses=240,
+@database_name = 'Base_24', 
+@job_name = N'Job_24';
+--b. Change the Alert_24 alert.
+--Make alert active not active. An error text must not be included in a message. The new value
+--of severity level is 004. The new value of delay between responses is 40 seconds. The error
+--must occur in the Base_4 database for the alert to fire. The Job_4 job must be executed in
+--response to this alert.
+EXEC dbo.sp_update_alert
+@enabled=0,
+@name = N'Alert_24',
+@include_event_description_in = 0,
+@severity = 4,
+@delay_between_responses=40,
+@database_name = 'Base_4', 
+@job_name = N'Job_4';
+
+--7. a. Create the Job_24 job. The job is active. Always delete the job. The job’s owner is Login_24.
+--The job always sends a notification about the completion of a task in Windows NT Application
+--Log. The job always sends notification to the Operator_24 operator by email. Define
+--email_name of operator. 
+USE msdb;
+
+CREATE LOGIN Login_24 WITH PASSWORD = 'PASS';
+
+USE msdb;
+EXEC sp_add_job 
+@job_name = N'Job_24',
+@enabled = 1,
+@description = 'Job_24',
+@owner_login_name = N'Login_24',
+@delete_level = 3,
+@notify_level_eventlog = 3,
+@notify_level_email = 3,
+@notify_email_operator_name = N'Operator_24';
+
+
+--b. Change the Job_24 job. Disable the job. Delete the job, if the task
+--is completed successfully. The job’s owner is Login_2. The job sends notification about the
+--completion of a task in Windows NT Application Log, if the task is completed successfully.
+--The job sends notification to the Operator_2 operator by email, if the task is completed
+--successfully. Define email_name of operator. (5 points, 3-2)
+EXEC dbo.sp_update_job
+@job_name = N'Job_24',
+@enabled = 0,
+@delete_level = 1,
+@description = 'Job_24',
+@owner_login_name = N'Login_2',
+@notify_level_eventlog = 1,
+@notify_level_email = 1,
+@notify_email_operator_name = N'Operator_2';
+
+--8. a. Add a disk backup device named Base_24_Backup, with the physical name
+--'D:\SQL\Backup_24\Base_24_Backup.bak' for the database Base_24. 
+USE master;
+EXEC sp_addumpdevice 'disk', 'Base_24_Backup', 'D:\SQL\Backup_24\Base_24_Backup.bak';
+
+--b. Create full backup for
+--the database Base_24. Create backup of the files: PFile241, PFile242, PFile243, PFile244,
+--PFile245 and PFile246, and filegroups: PRIMARY, Group_241 and Group_242, for the
+--database Base_24 (files and filegroups must exists). c. Restore the database Base_24 from files
+--and filegroups backup. (5 points, 1-2-2)
+
+
+USE master;
+EXEC sp_addumpdevice 'disk', 'Base_24_Backup', 'D:\SQL\Backup_24\Base_24_Backup.bak';
+BACKUP DATABASE Base_24 TO Base_24_Backup;
+
+
+USE  Base_24;
+
+BACKUP DATABASE Base_24
+FILE = 'PFile241',
+FILE = 'PFile242',
+FILE = 'PFile243',
+FILE = 'PFile244',
+FILE = 'PFile245',
+FILE = 'PFile246',
+FILEGROUP = 'PRIMARY',
+FILEGROUP = 'Group_241',
+FILEGROUP = 'Group_242'
+TO Base_24_Backup;
+
+USE Master;
+RESTORE DATABASE Base_24
+FILE = 'PFile241',
+FILE = 'PFile242',
+FILE = 'PFile243',
+FILE = 'PFile244',
+FILE = 'PFile245',
+FILE = 'PFile246',
+FILEGROUP = 'PRIMARY',
+FILEGROUP = 'Group_241',
+FILEGROUP = 'Group_242'
+FROM Base_24_Backup WITH FILE = 1, NORECOVERY, REPLACE;
+RESTORE DATABASE Base_24 FROM Base_24_Backup WITH FILE = 1, RECOVERY, REPLACE;
